@@ -1,28 +1,30 @@
 package pinboard
 
-import "fmt"
-import "time"
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"net/url"
+)
 
 type Pinboard struct {
-	user  string
-	token string
+	User  string
+	Token string
 }
 
-type Pin struct {
-	url         string
-	description string
-	hash        string
-	tags        []string
-	date        time.Time
+func (p *Pinboard) AuthQuery() string {
+	return fmt.Sprintf("%s:%s", p.User, p.Token)
 }
 
-func (p *Pinboard) GetPins() []Pin {
-	fmt.Println("hi")
-	Pins := make([]Pin, 3)
-	return Pins
-}
-
-func (p *Pinboard) GetAllPins() []Pin {
-	Pins := make([]Pin, 3)
-	return Pins
+func (p *Pinboard) Get(uri string) (*http.Response, error) {
+	u, err := url.Parse(uri)
+	q := u.Query()
+	q.Set("auth_token", p.AuthQuery())
+	u.RawQuery = q.Encode()
+	log.Println("Calling API with URL", u.String())
+	resp, err := http.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+	return resp, err
 }
