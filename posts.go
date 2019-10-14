@@ -9,21 +9,21 @@ import (
 )
 
 type Posts struct {
-	XMLName xml.Name `xml:"posts"`
-	User    string   `xml:"user,attr"`
-	Date    string   `xml:"dt,attr"`
-	Posts   []Post   `xml:"post"`
+	XMLName xml.Name  `xml:"posts"`
+	User    string    `xml:"user,attr"`
+	Date    time.Time `xml:"dt,attr"`
+	Posts   []Post    `xml:"post"`
 }
 
 type Post struct {
-	XMLName     xml.Name `xml:"post"`
-	Url         string   `xml:"href,attr"`
-	Description string   `xml:"description,attr"`
-	Hash        string   `xml:"hash,attr"`
-	Tags        string   `xml:"tag,attr"`
-	Extended    string   `xml:"extended,attr"`
-	Date        string   `xml:"time,attr"`
-	Shared      string   `xml:"shared,attr"`
+	XMLName     xml.Name  `xml:"post"`
+	Url         string    `xml:"href,attr"`
+	Description string    `xml:"description,attr"`
+	Hash        string    `xml:"hash,attr"`
+	Tags        string    `xml:"tag,attr"`
+	Extended    string    `xml:"extended,attr"`
+	Date        time.Time `xml:"time,attr"`
+	Shared      string    `xml:"shared,attr"`
 }
 
 type PostFilter struct {
