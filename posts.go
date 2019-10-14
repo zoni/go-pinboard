@@ -3,7 +3,9 @@ package pinboard
 import (
 	"encoding/xml"
 	"io/ioutil"
-	"log"
+	//"log"
+	"net/http"
+	"time"
 )
 
 type Posts struct {
@@ -24,26 +26,43 @@ type Post struct {
 	Shared      string   `xml:"shared,attr"`
 }
 
-func (p *Pinboard) GetRecentPosts() ([]Post, error) {
+type PostFilter struct {
+	tags []string
+	dt   time.Time
+	url  string
+	meta bool
+}
+
+func ParseResponse(resp *http.Response) ([]Post, error) {
 	posts := &Posts{}
-	url := "https://api.pinboard.in/v1/posts/recent"
-	resp, err := p.Get(url)
-	if err != nil {
-		return nil, err
-	}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Got resp_body length ", len(resp_body))
-	log.Println(string(resp_body))
 	err = xml.Unmarshal(resp_body, &posts)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("Got user ", posts.User)
 	return posts.Posts, err
+}
+
+func (p *Pinboard) GetPosts(pf PostFilter) ([]Post, error) {
+	url := "https://api.pinboard.in/v1/posts/get"
+	resp, err := p.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResponse(resp)
+}
+
+func (p *Pinboard) GetRecentPosts() ([]Post, error) {
+	url := "https://api.pinboard.in/v1/posts/recent"
+	resp, err := p.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	return ParseResponse(resp)
 }
 
 func (p *Pinboard) GetAllPosts() []Post {
