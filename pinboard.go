@@ -2,10 +2,12 @@ package pinboard
 
 import (
 	"fmt"
-	"log"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
+
+var APIBase = "https://api.pinboard.in/v1/"
 
 type Pinboard struct {
 	User  string
@@ -21,10 +23,18 @@ func (p *Pinboard) Get(uri string) (*http.Response, error) {
 	q := u.Query()
 	q.Set("auth_token", p.AuthQuery())
 	u.RawQuery = q.Encode()
-	log.Println("Calling API with URL", u.String())
+	fmt.Println("Calling API with ", u.String())
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		resp_body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, fmt.Errorf("Error reading error body: %v", err)
+		}
+		resp.Body.Close()
+		return nil, fmt.Errorf("Error from Pinboard API: %v", string(resp_body))
 	}
 	return resp, err
 }
