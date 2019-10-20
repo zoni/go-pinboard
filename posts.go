@@ -29,9 +29,19 @@ type Post struct {
 
 type PostFilter struct {
 	Tags []string
-	Dt   time.Time
+	Date time.Time
 	Url  string
 	Meta bool
+}
+
+type PostDates struct {
+	Date     time.Time
+	NumPosts int
+}
+
+type TagSuggestions struct {
+	PopularTags     []string
+	RecommendedTags []string
 }
 
 type RecentPostsFilter struct {
@@ -53,6 +63,32 @@ func ParseResponse(resp *http.Response) ([]Post, error) {
 	return posts.Posts, err
 }
 
+func (p *Pinboard) LastUpdate() time.Time {
+	return time.Now()
+}
+
+func (p *Pinboard) AddPost(pp Post) error {
+	return nil
+}
+
+func (p *Pinboard) DeletePost(dUrl string) error {
+	u, err := url.Parse(APIBase + "posts/delete")
+	if err != nil {
+		return fmt.Errorf("Unable to parse delete url %v", err)
+	}
+
+	q := u.Query()
+	q.Set("url", dUrl)
+	u.RawQuery = q.Encode()
+
+	_, err = p.Get(u.String())
+	if err != nil {
+		return fmt.Errorf("Error from delete request %v", err)
+	}
+
+	return nil
+}
+
 func (p *Pinboard) GetPosts(pf PostFilter) ([]Post, error) {
 	u, _ := url.Parse(APIBase + "posts/get")
 	resp, err := p.Get(u.String())
@@ -60,6 +96,10 @@ func (p *Pinboard) GetPosts(pf PostFilter) ([]Post, error) {
 		return nil, err
 	}
 	return ParseResponse(resp)
+}
+
+func (p *Pinboard) GetPostDates(tags []string) ([]PostDates, error) {
+	return nil, nil
 }
 
 func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
@@ -93,25 +133,12 @@ func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	return ParseResponse(resp)
 }
 
-func (p *Pinboard) DeletePost(dUrl string) error {
-	u, err := url.Parse(APIBase + "posts/delete")
-	if err != nil {
-		return fmt.Errorf("Unable to parse delete url %v", err)
-	}
-
-	q := u.Query()
-	q.Set("url", dUrl)
-	u.RawQuery = q.Encode()
-
-	_, err = p.Get(u.String())
-	if err != nil {
-		return fmt.Errorf("Error from delete request %v", err)
-	}
-
-	return nil
-}
-
 func (p *Pinboard) GetAllPosts() []Post {
 	posts := make([]Post, 3)
 	return posts
+}
+
+func (p *Pinboard) GetTagSuggestions(postUrl string) TagSuggestions {
+	ts := TagSuggestions{}
+	return ts
 }
