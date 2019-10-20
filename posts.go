@@ -93,6 +93,24 @@ func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	return ParseResponse(resp)
 }
 
+func (p *Pinboard) DeletePost(dUrl string) error {
+	u, err := url.Parse(APIBase + "posts/delete")
+	if err != nil {
+		return fmt.Errorf("Unable to parse delete url %v", err)
+	}
+
+	q := u.Query()
+	q.Set("url", dUrl)
+	u.RawQuery = q.Encode()
+
+	_, err = p.Get(u.String())
+	if err != nil {
+		return fmt.Errorf("Error from delete request %v", err)
+	}
+
+	return nil
+}
+
 func (p *Pinboard) GetAllPosts() []Post {
 	posts := make([]Post, 3)
 	return posts
