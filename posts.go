@@ -54,7 +54,7 @@ type RecentPostsFilter struct {
 	Count int
 }
 
-func ParseResponse(resp *http.Response) ([]Post, error) {
+func ParsePostsResponse(resp *http.Response) ([]Post, error) {
 	posts := &Posts{}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -118,7 +118,7 @@ func (p *Pinboard) GetPosts(pf PostFilter) ([]Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ParseResponse(resp)
+	return ParsePostsResponse(resp)
 }
 
 func (p *Pinboard) GetPostDates(tags []string) ([]PostDates, error) {
@@ -153,7 +153,7 @@ func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	return ParseResponse(resp)
+	return ParsePostsResponse(resp)
 }
 
 func (p *Pinboard) GetAllPosts() []Post {
