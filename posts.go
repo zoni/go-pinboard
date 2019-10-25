@@ -27,7 +27,12 @@ type Post struct {
 	Shared      string    `xml:"shared,attr"`
 }
 
-type PostFilter struct {
+type PostsLastUpdate struct {
+	XMLName    xml.Name  `xml:"update"`
+	UpdateTime time.Time `xml:"time,attr"`
+}
+
+type PostsFilter struct {
 	Tags []string
 	Date time.Time
 	Url  string
@@ -63,8 +68,26 @@ func ParseResponse(resp *http.Response) ([]Post, error) {
 	return posts.Posts, err
 }
 
-func (p *Pinboard) LastUpdate() time.Time {
-	return time.Now()
+func (p *Pinboard) LastUpdate() (time.Time, error) {
+	u, err := url.Parse(APIBase + "posts/update")
+
+	resp, err := p.Get(u.String())
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	update := &PostsLastUpdate{}
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return time.Time{}, err
+	}
+	err = xml.Unmarshal(resp_body, &update)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return update.UpdateTime, err
 }
 
 func (p *Pinboard) AddPost(pp Post) error {
