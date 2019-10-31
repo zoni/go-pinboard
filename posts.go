@@ -6,8 +6,19 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
+
+var validSchemes = []string{
+	"http",
+	"https",
+	"javascript",
+	"mailto",
+	"ftp",
+	"file",
+	"feed",
+}
 
 type Posts struct {
 	XMLName xml.Name  `xml:"posts"`
@@ -91,7 +102,79 @@ func (p *Pinboard) LastUpdate() (time.Time, error) {
 	return update.UpdateTime, err
 }
 
-func (p *Pinboard) AddPost(pp Post) error {
+func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
+	u, err := url.Parse(APIBase + "posts/add")
+	q := u.Query()
+
+	if len(pp.Url) < 1 {
+		return fmt.Errorf("AddPost requires a URL")
+	}
+	pu, err := url.Parse(pp.Url)
+	if err != nil {
+		return fmt.Errorf("Error parsing AddPost URL ", err)
+	}
+	validScheme := false
+	for _, v := range validSchemes {
+		if strings.ToLower(pu.Scheme) == v {
+			validScheme = true
+		}
+	}
+	if !validScheme {
+		return fmt.Errorf("Invalid scheme for Pinboard URL. Scheme must be one of %v", validSchemes)
+	}
+
+	q.Set("url", pp.Url)
+
+	if len(pp.Description) < 1 || len(pp.Description) > 255 {
+		return fmt.Errorf("Pinboard URL descriptions must be between 1 and 255 characters long")
+	}
+
+	q.Set("description", pp.Description)
+
+	if len(pp.Extended) > 0 {
+		if len(pp.Extended) > 65536 {
+			return fmt.Errorf("Pinboard extended descriptions must be less than 65536 characters long")
+		}
+		q.Set("extended", pp.Extended)
+	}
+
+	if len(pp.Tags) > 0 {
+		if len(pp.Tags) > 100 {
+			return fmt.Errorf("Pinboard posts may only have up to 100 tags")
+		}
+		for _, v := range pp.Tags {
+			q.Add("tag", v)
+		}
+	}
+
+	if !pp.Date.IsZero() {
+		q.Set("dt", pp.Date.UTC().Format(time.RFC3339))
+	}
+
+	if keep {
+		q.Set("replace", "no")
+	}
+
+	if toread {
+		q.Set("toread", "yes")
+	}
+
+	if len(pp.Shared) > 0 {
+		lshared := strings.ToLower(pp.Shared)
+		if lshared == "yes" || lshared == "no" {
+			q.Set("shared", lshared)
+		} else {
+			return fmt.Errorf("Shared must be either \"yes\" or \"no\"")
+		}
+	}
+
+	u.RawQuery = q.Encode()
+
+	_, err = p.Get(u.String())
+	if err != nil {
+		return fmt.Errorf("Error adding post: %v", err)
+	}
+
 	return nil
 }
 
