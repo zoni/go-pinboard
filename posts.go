@@ -25,6 +25,7 @@ type Post struct {
 	Extended    string    `xml:"extended,attr"`
 	Date        time.Time `xml:"time,attr"`
 	Shared      string    `xml:"shared,attr"`
+	Meta        string    `xml:"meta,attr"`
 }
 
 type PostsLastUpdate struct {
@@ -112,12 +113,39 @@ func (p *Pinboard) DeletePost(dUrl string) error {
 	return nil
 }
 
-func (p *Pinboard) GetPosts(pf PostFilter) ([]Post, error) {
+func (p *Pinboard) GetPosts(pf PostsFilter) ([]Post, error) {
 	u, _ := url.Parse(APIBase + "posts/get")
+	q := u.Query()
+
+	// Filters
+	if len(pf.Tags) > 0 {
+		if len(pf.Tags) > 3 {
+			return nil, fmt.Errorf("PostsFilter cannot accept more than 3 tags")
+		}
+		for _, t := range pf.Tags {
+			q.Add("tag", t)
+		}
+	}
+
+	if !pf.Date.IsZero() {
+		q.Set("dt", pf.Date.Format("2006-01-02"))
+	}
+
+	if len(pf.Url) > 0 {
+		q.Set("url", pf.Url)
+	}
+
+	if pf.Meta {
+		q.Set("meta", "yes")
+	}
+	u.RawQuery = q.Encode()
+
+	// Get posts
 	resp, err := p.Get(u.String())
 	if err != nil {
 		return nil, err
 	}
+
 	return ParsePostsResponse(resp)
 }
 
