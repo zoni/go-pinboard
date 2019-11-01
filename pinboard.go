@@ -14,14 +14,14 @@ type Pinboard struct {
 	Token string
 }
 
-func (p *Pinboard) AuthQuery() string {
+func (p *Pinboard) authQuery() string {
 	return fmt.Sprintf("%s:%s", p.User, p.Token)
 }
 
 func (p *Pinboard) Get(uri string) (*http.Response, error) {
 	u, err := url.Parse(uri)
 	q := u.Query()
-	q.Set("auth_token", p.AuthQuery())
+	q.Set("auth_token", p.authQuery())
 	u.RawQuery = q.Encode()
 	fmt.Println("Calling API with ", u.String())
 	resp, err := http.Get(u.String())
