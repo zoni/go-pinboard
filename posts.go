@@ -51,11 +51,6 @@ type PostsFilter struct {
 	Meta bool
 }
 
-type TagSuggestions struct {
-	PopularTags     []string
-	RecommendedTags []string
-}
-
 type RecentPostsFilter struct {
 	Tags  []string
 	Count int
