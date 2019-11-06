@@ -3,14 +3,14 @@ package pinboard
 import "strings"
 import "time"
 
-type Tags []string
+type PostTags []string
 
-func (t Tags) MarshalText() ([]byte, error) {
+func (t PostTags) MarshalText() ([]byte, error) {
 	s := strings.Join(t, " ")
 	return []byte(s), nil
 }
 
-func (t *Tags) UnmarshalText(text []byte) error {
+func (t *PostTags) UnmarshalText(text []byte) error {
 	tags := strings.Fields(string(text))
 	for _, v := range tags {
 		*t = append(*t, v)

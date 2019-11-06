@@ -32,7 +32,7 @@ type Post struct {
 	Url         string    `xml:"href,attr"`
 	Description string    `xml:"description,attr"`
 	Hash        string    `xml:"hash,attr"`
-	Tags        Tags      `xml:"tag,attr"`
+	Tags        PostTags  `xml:"tag,attr"`
 	Extended    string    `xml:"extended,attr"`
 	Date        time.Time `xml:"time,attr"`
 	Shared      string    `xml:"shared,attr"`
