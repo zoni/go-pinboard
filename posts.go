@@ -305,12 +305,54 @@ func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	return ParsePostsResponse(resp)
 }
 
-func (p *Pinboard) GetAllPosts() []Post {
-	posts := make([]Post, 3)
-	return posts
+type AllPostsFilter struct {
+	Tags    []string
+	Start   int
+	Results int
+	From    time.Time
+	To      time.Time
+	Meta    bool
 }
 
-func (p *Pinboard) GetTagSuggestions(postUrl string) TagSuggestions {
-	ts := TagSuggestions{}
-	return ts
+func (p *Pinboard) GetAllPosts(apf AllPostsFilter) ([]Post, error) {
+	u, _ := url.Parse(APIBase + "posts/all")
+	q := u.Query()
+
+	// Filters
+	if len(apf.Tags) > 0 {
+		if len(apf.Tags) > 3 {
+			return nil, fmt.Errorf("GetAllPosts can not accept more than 3 tags")
+		}
+		for _, t := range apf.Tags {
+			q.Add("tag", t)
+		}
+	}
+
+	if apf.Start > 0 {
+		q.Set("start", fmt.Sprintf("%d", apf.Start))
+	}
+
+	if apf.Results > 0 {
+		q.Set("results", fmt.Sprintf("%d", apf.Results))
+	}
+
+	if !apf.From.IsZero() {
+		q.Set("fromdt", apf.From.UTC().Format(time.RFC3339))
+	}
+
+	if !apf.To.IsZero() {
+		q.Set("fromdt", apf.To.UTC().Format(time.RFC3339))
+	}
+
+	if apf.Meta {
+		q.Set("meta", "yes")
+	}
+
+	u.RawQuery = q.Encode()
+	resp, err := p.Get(u.String())
+	if err != nil {
+		return nil, fmt.Errorf("GetAllPosts failed to retrieve: %v", err)
+	}
+
+	return ParsePostsResponse(resp)
 }
