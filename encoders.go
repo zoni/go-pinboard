@@ -1,6 +1,7 @@
 package pinboard
 
 import "strings"
+import "time"
 
 type Tags []string
 
@@ -16,4 +17,21 @@ func (t *Tags) UnmarshalText(text []byte) error {
 	}
 
 	return nil
+}
+
+type UTCDate struct {
+	time.Time
+}
+
+func (u UTCDate) MarshalText() ([]byte, error) {
+	s := u.UTC().Format("2006-01-02")
+	return []byte(s), nil
+}
+
+func (u *UTCDate) UnmarshalText(text []byte) error {
+	d, err := time.Parse("2006-01-02", string(text))
+
+	*u = UTCDate{d}
+
+	return err
 }

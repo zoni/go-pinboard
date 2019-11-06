@@ -51,11 +51,6 @@ type PostsFilter struct {
 	Meta bool
 }
 
-type PostDates struct {
-	Date     time.Time
-	NumPosts int
-}
-
 type TagSuggestions struct {
 	PopularTags     []string
 	RecommendedTags []string
@@ -77,7 +72,21 @@ func ParsePostsResponse(resp *http.Response) ([]Post, error) {
 	if err != nil {
 		return nil, err
 	}
-	return posts.Posts, err
+	return posts.Posts, nil
+}
+
+func ParsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
+	postdates := &PostDates{}
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	err = xml.Unmarshal(resp_body, &postdates)
+	if err != nil {
+		return nil, err
+	}
+	return postdates.PostDates, nil
 }
 
 func (p *Pinboard) LastUpdate() (time.Time, error) {
@@ -232,8 +241,37 @@ func (p *Pinboard) GetPosts(pf PostsFilter) ([]Post, error) {
 	return ParsePostsResponse(resp)
 }
 
-func (p *Pinboard) GetPostDates(tags []string) ([]PostDates, error) {
-	return nil, nil
+type PostDates struct {
+	XMLName   xml.Name   `xml:"dates"`
+	User      string     `xml:"user,attr"`
+	Tag       string     `xml:"tag,attr"`
+	PostDates []PostDate `xml:"date"`
+}
+
+type PostDate struct {
+	XMLName xml.Name `xml:"date"`
+	Date    UTCDate  `xml:"date,attr"`
+	Count   int      `xml:"count,attr"`
+}
+
+// GetPostDates returns an array of posts-per-day optionally filtered by a
+// given tag. Contrary to Pinboard's API documentation only a single tag is
+// accepted for filtering.
+func (p *Pinboard) GetPostDates(tag string) ([]PostDate, error) {
+	u, err := url.Parse(APIBase + "posts/dates")
+	q := u.Query()
+
+	if len(tag) > 0 {
+		q.Set("tag", tag)
+	}
+	u.RawQuery = q.Encode()
+
+	resp, err := p.Get(u.String())
+	if err != nil {
+		return nil, err
+	}
+
+	return ParsePostDatesResponse(resp)
 }
 
 func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
