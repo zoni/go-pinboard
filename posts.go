@@ -56,7 +56,7 @@ type RecentPostsFilter struct {
 	Count int
 }
 
-func ParsePostsResponse(resp *http.Response) ([]Post, error) {
+func parsePostsResponse(resp *http.Response) ([]Post, error) {
 	posts := &Posts{}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -70,7 +70,7 @@ func ParsePostsResponse(resp *http.Response) ([]Post, error) {
 	return posts.Posts, nil
 }
 
-func ParsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
+func parsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
 	postdates := &PostDates{}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -85,7 +85,7 @@ func ParsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
 }
 
 func (p *Pinboard) LastUpdate() (time.Time, error) {
-	u, err := url.Parse(APIBase + "posts/update")
+	u, err := url.Parse(apiBase + "posts/update")
 
 	resp, err := p.Get(u.String())
 	if err != nil {
@@ -107,7 +107,7 @@ func (p *Pinboard) LastUpdate() (time.Time, error) {
 }
 
 func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
-	u, err := url.Parse(APIBase + "posts/add")
+	u, err := url.Parse(apiBase + "posts/add")
 	q := u.Query()
 
 	if len(pp.Url) < 1 {
@@ -183,7 +183,7 @@ func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
 }
 
 func (p *Pinboard) DeletePost(dUrl string) error {
-	u, err := url.Parse(APIBase + "posts/delete")
+	u, err := url.Parse(apiBase + "posts/delete")
 	if err != nil {
 		return fmt.Errorf("Unable to parse DeletePost url %v", err)
 	}
@@ -200,8 +200,8 @@ func (p *Pinboard) DeletePost(dUrl string) error {
 	return nil
 }
 
-func (p *Pinboard) GetPosts(pf PostsFilter) ([]Post, error) {
-	u, _ := url.Parse(APIBase + "posts/get")
+func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
+	u, _ := url.Parse(apiBase + "posts/get")
 	q := u.Query()
 
 	// Filters
@@ -233,7 +233,7 @@ func (p *Pinboard) GetPosts(pf PostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	return ParsePostsResponse(resp)
+	return parsePostsResponse(resp)
 }
 
 type PostDates struct {
@@ -249,11 +249,11 @@ type PostDate struct {
 	Count   int      `xml:"count,attr"`
 }
 
-// GetPostDates returns an array of posts-per-day optionally filtered by a
+// PostDates returns an array of posts-per-day optionally filtered by a
 // given tag. Contrary to Pinboard's API documentation only a single tag is
 // accepted for filtering.
-func (p *Pinboard) GetPostDates(tag string) ([]PostDate, error) {
-	u, err := url.Parse(APIBase + "posts/dates")
+func (p *Pinboard) PostDates(tag string) ([]PostDate, error) {
+	u, err := url.Parse(apiBase + "posts/dates")
 	q := u.Query()
 
 	if len(tag) > 0 {
@@ -266,11 +266,11 @@ func (p *Pinboard) GetPostDates(tag string) ([]PostDate, error) {
 		return nil, err
 	}
 
-	return ParsePostDatesResponse(resp)
+	return parsePostDatesResponse(resp)
 }
 
-func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
-	u, err := url.Parse(APIBase + "posts/recent")
+func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
+	u, err := url.Parse(apiBase + "posts/recent")
 
 	// Filters
 	q := u.Query()
@@ -297,7 +297,7 @@ func (p *Pinboard) GetRecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	return ParsePostsResponse(resp)
+	return parsePostsResponse(resp)
 }
 
 type AllPostsFilter struct {
@@ -309,14 +309,14 @@ type AllPostsFilter struct {
 	Meta    bool
 }
 
-func (p *Pinboard) GetAllPosts(apf AllPostsFilter) ([]Post, error) {
-	u, _ := url.Parse(APIBase + "posts/all")
+func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
+	u, _ := url.Parse(apiBase + "posts/all")
 	q := u.Query()
 
 	// Filters
 	if len(apf.Tags) > 0 {
 		if len(apf.Tags) > 3 {
-			return nil, fmt.Errorf("GetAllPosts can not accept more than 3 tags")
+			return nil, fmt.Errorf("AllPosts can not accept more than 3 tags")
 		}
 		for _, t := range apf.Tags {
 			q.Add("tag", t)
@@ -346,8 +346,8 @@ func (p *Pinboard) GetAllPosts(apf AllPostsFilter) ([]Post, error) {
 	u.RawQuery = q.Encode()
 	resp, err := p.Get(u.String())
 	if err != nil {
-		return nil, fmt.Errorf("GetAllPosts failed to retrieve: %v", err)
+		return nil, fmt.Errorf("AllPosts failed to retrieve: %v", err)
 	}
 
-	return ParsePostsResponse(resp)
+	return parsePostsResponse(resp)
 }

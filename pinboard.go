@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-var APIBase = "https://api.pinboard.in/v1/"
+var apiBase = "https://api.pinboard.in/v1/"
 
 type Pinboard struct {
 	User  string

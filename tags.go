@@ -20,7 +20,7 @@ type Tag struct {
 	Tag     string   `xml:"tag,attr"`
 }
 
-func ParseTagsResponse(resp *http.Response) (Tags, error) {
+func parseTagsResponse(resp *http.Response) (Tags, error) {
 	t := Tags{}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
@@ -34,10 +34,10 @@ func ParseTagsResponse(resp *http.Response) (Tags, error) {
 	return t, nil
 }
 
-func (p *Pinboard) GetTags() (Tags, error) {
-	u, err := url.Parse(APIBase + "tags/get")
+func (p *Pinboard) Tags() (Tags, error) {
+	u, err := url.Parse(apiBase + "tags/get")
 	if err != nil {
-		return Tags{}, fmt.Errorf("Failed to parse GetTags API URL: %v", err)
+		return Tags{}, fmt.Errorf("Failed to parse Tags API URL: %v", err)
 	}
 
 	resp, err := p.Get(u.String())
@@ -45,7 +45,7 @@ func (p *Pinboard) GetTags() (Tags, error) {
 		return Tags{}, err
 	}
 
-	return ParseTagsResponse(resp)
+	return parseTagsResponse(resp)
 }
 
 // DeleteTag deletes the given tag from a user's Pinboard account. There is no
@@ -53,7 +53,7 @@ func (p *Pinboard) GetTags() (Tags, error) {
 // account. This API endpoint has no meaningful response, so an error is returned
 // only if the HTTP request fails.
 func (p *Pinboard) DeleteTag(tag string) error {
-	u, err := url.Parse(APIBase + "tags/delete")
+	u, err := url.Parse(apiBase + "tags/delete")
 	if err != nil {
 		return fmt.Errorf("Failed to parse DeleteTag API URL: %v", err)
 	}
@@ -80,7 +80,7 @@ type TagSuggestions struct {
 	Recommended []string `xml:"recommended"`
 }
 
-func ParseSuggestedTagsResponse(resp *http.Response) (TagSuggestions, error) {
+func parseSuggestedTagsResponse(resp *http.Response) (TagSuggestions, error) {
 	ts := TagSuggestions{}
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
@@ -94,8 +94,8 @@ func ParseSuggestedTagsResponse(resp *http.Response) (TagSuggestions, error) {
 	return ts, nil
 }
 
-func (p *Pinboard) GetTagSuggestions(postUrl string) (TagSuggestions, error) {
-	u, _ := url.Parse(APIBase + "posts/suggest")
+func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
+	u, _ := url.Parse(apiBase + "posts/suggest")
 	q := u.Query()
 
 	pu, _ := url.Parse(postUrl)
@@ -117,5 +117,5 @@ func (p *Pinboard) GetTagSuggestions(postUrl string) (TagSuggestions, error) {
 		return TagSuggestions{}, err
 	}
 
-	return ParseSuggestedTagsResponse(resp)
+	return parseSuggestedTagsResponse(resp)
 }
