@@ -40,7 +40,7 @@ func (p *Pinboard) Tags() (Tags, error) {
 		return Tags{}, fmt.Errorf("Failed to parse Tags API URL: %v", err)
 	}
 
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return Tags{}, err
 	}
@@ -66,7 +66,7 @@ func (p *Pinboard) DeleteTag(tag string) error {
 
 	u.RawQuery = q.Encode()
 
-	_, err = p.Get(u.String())
+	_, err = p.Get(u)
 	if err != nil {
 		return fmt.Errorf("Error from DeleteTag request %v", err)
 	}
@@ -112,7 +112,7 @@ func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
 	q.Set("url", postUrl)
 	u.RawQuery = q.Encode()
 
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return TagSuggestions{}, err
 	}

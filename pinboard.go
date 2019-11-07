@@ -29,8 +29,7 @@ func (p *Pinboard) authQuery() string {
 	return fmt.Sprintf("%s:%s", p.User, p.Token)
 }
 
-func (p *Pinboard) Get(uri string) (*http.Response, error) {
-	u, err := url.Parse(uri)
+func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
 	fmt.Println("Calling API with ", u.String())
 	q := u.Query()
 	q.Set("auth_token", p.authQuery())

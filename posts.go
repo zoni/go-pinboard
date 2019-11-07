@@ -87,7 +87,7 @@ func parsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
 func (p *Pinboard) LastUpdate() (time.Time, error) {
 	u, err := url.Parse(apiBase + "posts/update")
 
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return time.Time{}, err
 	}
@@ -174,7 +174,7 @@ func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
 
 	u.RawQuery = q.Encode()
 
-	_, err = p.Get(u.String())
+	_, err = p.Get(u)
 	if err != nil {
 		return fmt.Errorf("Error adding post: %v", err)
 	}
@@ -192,7 +192,7 @@ func (p *Pinboard) DeletePost(dUrl string) error {
 	q.Set("url", dUrl)
 	u.RawQuery = q.Encode()
 
-	_, err = p.Get(u.String())
+	_, err = p.Get(u)
 	if err != nil {
 		return fmt.Errorf("Error from DeletePost request %v", err)
 	}
@@ -228,7 +228,7 @@ func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
 	u.RawQuery = q.Encode()
 
 	// Get posts
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -261,7 +261,7 @@ func (p *Pinboard) PostDates(tag string) ([]PostDate, error) {
 	}
 	u.RawQuery = q.Encode()
 
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +292,7 @@ func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	u.RawQuery = q.Encode()
 
 	// Get posts
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +344,7 @@ func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
 	}
 
 	u.RawQuery = q.Encode()
-	resp, err := p.Get(u.String())
+	resp, err := p.Get(u)
 	if err != nil {
 		return nil, fmt.Errorf("AllPosts failed to retrieve: %v", err)
 	}
