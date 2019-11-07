@@ -1,3 +1,14 @@
+// Package pinboard is an implementation of the Pinboard V1 API (https://pinboard.in/api)
+//
+// This package communicates with the Pinboard API in XML for novelty's sake. All authenticated requests
+// happen via auth token (except for the initial token retrieval, if a password is supplied). This package
+// implements the API as documented, though some small fixes have been made to maintain type cohesion.
+// See method comments for exceptions to the API documentation.
+//
+// Note that the Pinboard API attempts to faithfully re-implement the del.icio.us API and does not behave how
+// a modern API may be expected to behave. URLs are not RESTful; every operation is done via GET requests.
+// Response/ status is communicated in the response body; only API/HTTP errors (such as throttling or server
+// issues) cause an HTTP status code > 299.
 package pinboard
 
 import (
