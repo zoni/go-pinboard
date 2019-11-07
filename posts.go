@@ -185,7 +185,7 @@ func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
 func (p *Pinboard) DeletePost(dUrl string) error {
 	u, err := url.Parse(APIBase + "posts/delete")
 	if err != nil {
-		return fmt.Errorf("Unable to parse delete url %v", err)
+		return fmt.Errorf("Unable to parse DeletePost url %v", err)
 	}
 
 	q := u.Query()
@@ -194,7 +194,7 @@ func (p *Pinboard) DeletePost(dUrl string) error {
 
 	_, err = p.Get(u.String())
 	if err != nil {
-		return fmt.Errorf("Error from delete request %v", err)
+		return fmt.Errorf("Error from DeletePost request %v", err)
 	}
 
 	return nil
