@@ -30,7 +30,7 @@ func (p *Pinboard) authQuery() string {
 }
 
 func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
-	fmt.Println("Calling API with ", u.String())
+	fmt.Println("Calling API with", u.String())
 	q := u.Query()
 	q.Set("auth_token", p.authQuery())
 	u.RawQuery = q.Encode()

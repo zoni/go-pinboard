@@ -74,6 +74,30 @@ func (p *Pinboard) DeleteTag(tag string) error {
 	return nil
 }
 
+func (p *Pinboard) RenameTag(old, new string) error {
+	u, err := url.Parse(apiBase + "tags/rename")
+	if err != nil {
+		return fmt.Errorf("Failed to parse RenameTag API URL: %v", err)
+	}
+	q := u.Query()
+
+	if len(old) < 1 || len(new) < 1 {
+		return fmt.Errorf("Both old and new tag must not be empty string for RenameTag")
+	}
+
+	q.Set("old", old)
+	q.Set("new", new)
+
+	u.RawQuery = q.Encode()
+
+	_, err = p.Get(u)
+	if err != nil {
+		return fmt.Errorf("Error from RenameTag request %v", err)
+	}
+
+	return nil
+}
+
 type TagSuggestions struct {
 	XMLName     xml.Name `xml:"suggested"`
 	Popular     []string `xml:"popular"`
