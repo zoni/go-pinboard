@@ -3,6 +3,9 @@ package pinboard
 import "strings"
 import "time"
 
+// postTags is a type for parsing tags returned by the Pinboard API. The API returns
+// tags as a space delimeted list, however we want to return them to the user as a
+// slice of []string
 type postTags []string
 
 func (t postTags) MarshalText() ([]byte, error) {
@@ -19,6 +22,7 @@ func (t *postTags) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// utcDate is a type for parsing _some_ of the dates returned by the Pinboard API.
 type utcDate struct {
 	time.Time
 }
@@ -34,6 +38,7 @@ func (u *utcDate) UnmarshalText(text []byte) error {
 	return err
 }
 
+// notesDate is a type for parsing the datetime stamps in the notes list
 type notesDate struct {
 	time.Time
 }

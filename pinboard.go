@@ -14,8 +14,8 @@ import (
 
 var apiBase = "https://api.pinboard.in/v1/"
 
-// A Pinboard represents a client for the Pinboard V1 API. Authentication can use passwords
-// or tokens. Token auth is recommended for good password hygiene.
+// A Pinboard represents a client for the Pinboard V1 API. Authentication can use
+// passwords or tokens. Token auth is recommended for good password hygiene.
 type Pinboard struct {
 	User     string
 	Password string
@@ -41,6 +41,7 @@ func (p *Pinboard) authQuery(u *url.URL) error {
 	return nil
 }
 
+// Retrieve an API response for the given URL. Auth is added to the URL object here
 func (p *Pinboard) get(u *url.URL) (*http.Response, error) {
 	err := p.authQuery(u)
 	if err != nil {
@@ -65,6 +66,9 @@ func (p *Pinboard) get(u *url.URL) (*http.Response, error) {
 	return resp, err
 }
 
+// parseResponse is a helper for parsing XML into different types. The use of the
+// empty interface and type assertions may be too clever for our own good. Feel free
+// to report bugs if you get panics from this
 func parseResponse(resp *http.Response, to interface{}) (interface{}, error) {
 	resp_body, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()

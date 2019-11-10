@@ -12,6 +12,10 @@ type notes struct {
 	Notes   []Note   `xml:"note"`
 }
 
+// A Note can represent either a note in the NotesList, or a single note. Depending
+// on which type of note is called for different fields will be populated (ex: Created
+// and Updated are only returned in the NotesList. Text is only returned by NotesGet).
+// Text may be contain newlines.
 type Note struct {
 	XMLName xml.Name  `xml:"note"`
 	ID      string    `xml:"id,attr"`
@@ -23,6 +27,7 @@ type Note struct {
 	Text    string    `xml:"text"`
 }
 
+// NotesList returns a list of the user's notes.
 func (p *Pinboard) NotesList() ([]Note, error) {
 	u, err := url.Parse(apiBase + "notes/list")
 	if err != nil {
@@ -42,6 +47,7 @@ func (p *Pinboard) NotesList() ([]Note, error) {
 	return no.Notes, err
 }
 
+// NotesGet returns a single Note.
 func (p *Pinboard) NotesGet(noteID string) (Note, error) {
 	if m, _ := regexp.Match("[a-z0-9]{20}", []byte(noteID)); !m {
 		return Note{}, fmt.Errorf("Note ID must be a 20 character sha1 hash")

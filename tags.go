@@ -12,12 +12,17 @@ type tags struct {
 	Tags    []Tag    `xml:"tag"`
 }
 
+// A Tag in Pinboard is a simple string applied to posts for organizational purposes.
+// Users can create Private Tags (tags only visible to the posting user) by prepending
+// the tag with a period (.). Tags returned from the Tags endpoints contain a count of
+// how often they're used.
 type Tag struct {
 	XMLName xml.Name `xml:"tag"`
 	Count   int      `xml:"count,attr"`
 	Tag     string   `xml:"tag,attr"`
 }
 
+// TagsGet returns a list of []Tag corresponding to the tags in the user's account.
 func (p *Pinboard) TagsGet() ([]Tag, error) {
 	u, err := url.Parse(apiBase + "tags/get")
 	if err != nil {
@@ -64,6 +69,7 @@ func (p *Pinboard) TagsDelete(tag string) error {
 	return nil
 }
 
+// TagsRename renames a tag by changing that tag on every post in the user's account.
 func (p *Pinboard) TagsRename(old, new string) error {
 	u, err := url.Parse(apiBase + "tags/rename")
 	if err != nil {
@@ -88,12 +94,16 @@ func (p *Pinboard) TagsRename(old, new string) error {
 	return nil
 }
 
+// Pinboard returns two types of tag suggestions, popular tags are tags from the community.
+// Recommended tags are based on the user's existing tags
 type TagSuggestions struct {
 	XMLName     xml.Name `xml:"suggested"`
 	Popular     []string `xml:"popular"`
 	Recommended []string `xml:"recommended"`
 }
 
+// TagsSuggestions returns tag suggestions for the given URL. Note: Currently only recommended
+// tags are actually returned from the Pinboard API
 func (p *Pinboard) TagsSuggestions(postUrl string) (TagSuggestions, error) {
 	u, _ := url.Parse(apiBase + "posts/suggest")
 	q := u.Query()

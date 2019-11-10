@@ -5,6 +5,7 @@ import (
 	"net/url"
 )
 
+// UserSecret returns the user's secret RSS key for viewing private feeds.
 func (p *Pinboard) UserSecret() (string, error) {
 	u, err := url.Parse(apiBase + "user/secret")
 	if err != nil {
@@ -24,6 +25,7 @@ func (p *Pinboard) UserSecret() (string, error) {
 	return res.Result, err
 }
 
+// UserApitoken returns the user's API token.
 func (p *Pinboard) UserApiToken() (string, error) {
 	u, err := url.Parse(apiBase + "user/api_token")
 	if err != nil {

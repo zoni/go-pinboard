@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Pinboard only accepts URLs with the following schemes
 var validSchemes = []string{
 	"http",
 	"https",
@@ -25,6 +26,8 @@ type posts struct {
 	Posts   []Post    `xml:"post"`
 }
 
+// Posts returned by the Pinboard API. Methods will return a slice of []Post, there
+// are no single post read endpoint(s).
 type Post struct {
 	XMLName     xml.Name  `xml:"post"`
 	Url         string    `xml:"href,attr"`
@@ -42,6 +45,10 @@ type postsLastUpdate struct {
 	UpdateTime time.Time `xml:"time,attr"`
 }
 
+// PostsFilter is used for PostsGet to filter posts returned. If no Date is given
+// then only posts from the date of the most recent post will be returned. If a Url
+// is given only that post will be returned. Posts can be filtered by up to 3 tags
+// (a post must have *ALL* given tags in order to match)
 type PostsFilter struct {
 	Tags []string
 	Date time.Time
@@ -49,11 +56,14 @@ type PostsFilter struct {
 	Meta bool
 }
 
+// PostsRecentFilter is used for PostsRecent to filter the posts returned. If no
+// Count is given then 15 posts are returned.
 type PostsRecentFilter struct {
 	Tags  []string
 	Count int
 }
 
+// PostsUpdated returns that datetime of the most recent post update.
 func (p *Pinboard) PostsUpdated() (time.Time, error) {
 	u, err := url.Parse(apiBase + "posts/update")
 
@@ -71,6 +81,10 @@ func (p *Pinboard) PostsUpdated() (time.Time, error) {
 	return up.UpdateTime, err
 }
 
+// PostsAdd adds a new post. The 'keep' argument decides whether a post should be
+// updated or rejected if the Url has already been saved before. The 'read' argument
+// sets the read-indicator within Pinboard (highlighting the post until "Mark as read"
+// has been clicked)
 func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 	u, err := url.Parse(apiBase + "posts/add")
 	q := u.Query()
@@ -147,6 +161,9 @@ func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 	return nil
 }
 
+// PostsDelete deletes a post via a given URL. The API does not distinguish whether
+// a post with the given URL actually exists within an account, so an error is only
+// returned if something happens at the HTTP/application server level.
 func (p *Pinboard) PostsDelete(du string) error {
 	u, err := url.Parse(apiBase + "posts/delete")
 	if err != nil {
@@ -165,6 +182,7 @@ func (p *Pinboard) PostsDelete(du string) error {
 	return nil
 }
 
+// PostsGet retrieves all posts from a given day or the single post for a given URL.
 func (p *Pinboard) PostsGet(pf PostsFilter) ([]Post, error) {
 	u, _ := url.Parse(apiBase + "posts/get")
 	q := u.Query()
@@ -214,13 +232,14 @@ type postDates struct {
 	PostDates []PostDate `xml:"date"`
 }
 
+// A PostDate represents the number of posts per date within a user's account.
 type PostDate struct {
 	XMLName xml.Name `xml:"date"`
 	Date    utcDate  `xml:"date,attr"`
 	Count   int      `xml:"count,attr"`
 }
 
-// PostDates returns an array of posts-per-day optionally filtered by a
+// PostsDates returns an array of posts-per-day optionally filtered by a
 // given tag. Contrary to Pinboard's API documentation only a single tag is
 // accepted for filtering.
 func (p *Pinboard) PostsDates(tag string) ([]PostDate, error) {
@@ -246,6 +265,7 @@ func (p *Pinboard) PostsDates(tag string) ([]PostDate, error) {
 	return pd.PostDates, err
 }
 
+// PostsRecent returns up to the 100 most recent posts from a user's account.
 func (p *Pinboard) PostsRecent(rpf PostsRecentFilter) ([]Post, error) {
 	u, err := url.Parse(apiBase + "posts/recent")
 
@@ -283,6 +303,12 @@ func (p *Pinboard) PostsRecent(rpf PostsRecentFilter) ([]Post, error) {
 	return pd.Posts, err
 }
 
+// PostsAllFilter is used by PostsAll to filter posts returned. If none of the
+// filters are set *ALL* posts from the users account will be returned.
+// Alternatively results can be sliced by date (using From and To) or paginated
+// using Start and Results. Results should be called "Count" but is named Result
+// to match the API. Posts can also be filtered by up to 3 tags (posts must be
+// tagged with *ALL* given tags in order to match).
 type PostsAllFilter struct {
 	Tags    []string
 	Start   int
@@ -292,6 +318,7 @@ type PostsAllFilter struct {
 	Meta    bool
 }
 
+// PostsAll returns all posts in a user's account filtered by a PostsAllFilter.
 func (p *Pinboard) PostsAll(apf PostsAllFilter) ([]Post, error) {
 	u, _ := url.Parse(apiBase + "posts/all")
 	q := u.Query()
