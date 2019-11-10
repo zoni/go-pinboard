@@ -30,8 +30,21 @@ func (u UTCDate) MarshalText() ([]byte, error) {
 
 func (u *UTCDate) UnmarshalText(text []byte) error {
 	d, err := time.Parse("2006-01-02", string(text))
-
 	*u = UTCDate{d}
+	return err
+}
 
+type NotesDate struct {
+	time.Time
+}
+
+func (n NotesDate) MarshalText() ([]byte, error) {
+	s := n.UTC().Format("2006-01-02 15:04:05")
+	return []byte(s), nil
+}
+
+func (n *NotesDate) UnmarshalText(text []byte) error {
+	d, err := time.Parse("2006-01-02 15:04:05", string(text))
+	*n = NotesDate{d}
 	return err
 }
