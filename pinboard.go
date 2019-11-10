@@ -48,7 +48,6 @@ func (p *Pinboard) get(u *url.URL) (*http.Response, error) {
 		return nil, fmt.Errorf("Pinboard failed to generate an auth query param", err)
 	}
 
-	fmt.Println("Calling API with", u.String())
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return nil, err
