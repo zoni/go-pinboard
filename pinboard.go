@@ -12,6 +12,7 @@
 package pinboard
 
 import (
+	"encoding/xml"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -60,4 +61,9 @@ func parseResponse(resp *http.Response, to interface{}) (interface{}, error) {
 		return nil, err
 	}
 	return to, nil
+}
+
+type Result struct {
+	XMLName xml.Name `xml:"result"`
+	Result  string   `xml:",innerxml"`
 }
