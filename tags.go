@@ -18,24 +18,24 @@ type Tag struct {
 	Tag     string   `xml:"tag,attr"`
 }
 
-func (p *Pinboard) Tags() (Tags, error) {
+func (p *Pinboard) Tags() ([]Tag, error) {
 	u, err := url.Parse(apiBase + "tags/get")
 	if err != nil {
-		return Tags{}, fmt.Errorf("Failed to parse Tags API URL: %v", err)
+		return []Tag{}, fmt.Errorf("Failed to parse Tags API URL: %v", err)
 	}
 
 	resp, err := p.Get(u)
 	if err != nil {
-		return Tags{}, err
+		return []Tag{}, err
 	}
 
 	tmp, err := parseResponse(resp, &Tags{})
 	if err != nil {
-		return Tags{}, fmt.Errorf("Failed to parse Tags response %v", err)
+		return []Tag{}, fmt.Errorf("Failed to parse Tags response %v", err)
 	}
 	t := tmp.(*Tags)
 
-	return *t, err
+	return t.Tags, err
 }
 
 // DeleteTag deletes the given tag from a user's Pinboard account. There is no
