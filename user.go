@@ -11,7 +11,7 @@ func (p *Pinboard) UserSecret() (string, error) {
 		return "", fmt.Errorf("Failed to parse UserSecret url: %v", err)
 	}
 
-	resp, err := p.Get(u)
+	resp, err := p.get(u)
 	if err != nil {
 		return "", fmt.Errorf("Error from UserSecret request: %v", err)
 	}
@@ -30,7 +30,7 @@ func (p *Pinboard) UserApiToken() (string, error) {
 		return "", fmt.Errorf("Failed to parse UserApiToken url: %v", err)
 	}
 
-	resp, err := p.Get(u)
+	resp, err := p.get(u)
 	if err != nil {
 		return "", fmt.Errorf("Error from UserApiToken request: %v", err)
 	}

@@ -41,7 +41,7 @@ func (p *Pinboard) authQuery(u *url.URL) error {
 	return nil
 }
 
-func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
+func (p *Pinboard) get(u *url.URL) (*http.Response, error) {
 	err := p.authQuery(u)
 	if err != nil {
 		return nil, fmt.Errorf("Pinboard failed to generate an auth query param", err)

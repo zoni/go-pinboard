@@ -29,7 +29,7 @@ func (p *Pinboard) Notes() ([]Note, error) {
 		return []Note{}, fmt.Errorf("Failed to parse Notes list API URL: %v", err)
 	}
 
-	resp, err := p.Get(u)
+	resp, err := p.get(u)
 	if err != nil {
 		return []Note{}, err
 	}
@@ -52,7 +52,7 @@ func (p *Pinboard) Note(noteID string) (Note, error) {
 		return Note{}, fmt.Errorf("Failed to parse note URL: %v", err)
 	}
 
-	resp, err := p.Get(u)
+	resp, err := p.get(u)
 	if err != nil {
 		return Note{}, fmt.Errorf("Error getting note: %v", err)
 	}
