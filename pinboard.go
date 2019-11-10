@@ -1,14 +1,7 @@
 // Package pinboard is an implementation of the Pinboard V1 API (https://pinboard.in/api)
 //
-// This package communicates with the Pinboard API in XML for novelty's sake. All authenticated requests
-// happen via auth token (except for the initial token retrieval, if a password is supplied). This package
-// implements the API as documented, though some small fixes have been made to maintain type cohesion.
-// See method comments for exceptions to the API documentation.
-//
-// Note that the Pinboard API attempts to faithfully re-implement the del.icio.us API and does not behave how
-// a modern API may be expected to behave. URLs are not RESTful; every operation is done via GET requests.
-// Response/ status is communicated in the response body; only API/HTTP errors (such as throttling or server
-// issues) cause an HTTP status code > 299.
+// This package implements  the API as documented, though some fixes have been made to
+// maintain type cohesion. See method comments for exceptions to the API documentation.
 package pinboard
 
 import (
@@ -21,24 +14,45 @@ import (
 
 var apiBase = "https://api.pinboard.in/v1/"
 
+// A Pinboard represents a client for the Pinboard V1 API. Authentication can use passwords
+// or tokens. Token auth is recommended for good password hygiene.
 type Pinboard struct {
-	User  string
-	Token string
+	User     string
+	Password string
+	Token    string
 }
 
-func (p *Pinboard) authQuery() string {
-	return fmt.Sprintf("%s:%s", p.User, p.Token)
+func (p *Pinboard) authQuery(u *url.URL) error {
+	if len(p.User) < 1 {
+		return fmt.Errorf("Pinboard requires a Username and either a Password or Token for authentication")
+	}
+
+	if len(p.Token) < 1 {
+		if len(p.Password) < 1 {
+			return fmt.Errorf("Pinboard requires either a Password or Token for authentication")
+		}
+		u.User = url.UserPassword(p.User, p.Password)
+		return nil
+	}
+
+	q := u.Query()
+	q.Set("auth_token", fmt.Sprintf("%s:%s", p.User, p.Token))
+	u.RawQuery = q.Encode()
+	return nil
 }
 
 func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
+	err := p.authQuery(u)
+	if err != nil {
+		return nil, fmt.Errorf("Pinboard failed to generate an auth query param", err)
+	}
+
 	fmt.Println("Calling API with", u.String())
-	q := u.Query()
-	q.Set("auth_token", p.authQuery())
-	u.RawQuery = q.Encode()
 	resp, err := http.Get(u.String())
 	if err != nil {
 		return nil, err
 	}
+
 	if resp.StatusCode >= 400 {
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
@@ -47,6 +61,7 @@ func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
 		resp.Body.Close()
 		return nil, fmt.Errorf("Error from Pinboard API: %v", string(resp_body))
 	}
+
 	return resp, err
 }
 
