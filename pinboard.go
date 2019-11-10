@@ -78,7 +78,7 @@ func parseResponse(resp *http.Response, to interface{}) (interface{}, error) {
 	return to, nil
 }
 
-type Result struct {
+type result struct {
 	XMLName xml.Name `xml:"result"`
 	Result  string   `xml:",innerxml"`
 }

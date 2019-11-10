@@ -23,7 +23,7 @@ type Note struct {
 	Text    string    `xml:"text"`
 }
 
-func (p *Pinboard) Notes() ([]Note, error) {
+func (p *Pinboard) NotesList() ([]Note, error) {
 	u, err := url.Parse(apiBase + "notes/list")
 	if err != nil {
 		return []Note{}, fmt.Errorf("Failed to parse Notes list API URL: %v", err)
@@ -42,7 +42,7 @@ func (p *Pinboard) Notes() ([]Note, error) {
 	return no.Notes, err
 }
 
-func (p *Pinboard) Note(noteID string) (Note, error) {
+func (p *Pinboard) NotesGet(noteID string) (Note, error) {
 	if m, _ := regexp.Match("[a-z0-9]{20}", []byte(noteID)); !m {
 		return Note{}, fmt.Errorf("Note ID must be a 20 character sha1 hash")
 	}

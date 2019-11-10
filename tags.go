@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Tags struct {
+type tags struct {
 	XMLName xml.Name `xml:"tags"`
 	Tags    []Tag    `xml:"tag"`
 }
@@ -18,7 +18,7 @@ type Tag struct {
 	Tag     string   `xml:"tag,attr"`
 }
 
-func (p *Pinboard) Tags() ([]Tag, error) {
+func (p *Pinboard) TagsGet() ([]Tag, error) {
 	u, err := url.Parse(apiBase + "tags/get")
 	if err != nil {
 		return []Tag{}, fmt.Errorf("Failed to parse Tags API URL: %v", err)
@@ -29,23 +29,23 @@ func (p *Pinboard) Tags() ([]Tag, error) {
 		return []Tag{}, err
 	}
 
-	tmp, err := parseResponse(resp, &Tags{})
+	tmp, err := parseResponse(resp, &tags{})
 	if err != nil {
 		return []Tag{}, fmt.Errorf("Failed to parse Tags response %v", err)
 	}
-	t := tmp.(*Tags)
+	t := tmp.(*tags)
 
 	return t.Tags, err
 }
 
-// DeleteTag deletes the given tag from a user's Pinboard account. There is no
+// TagsDelete deletes the given tag from a user's Pinboard account. There is no
 // central store for tags, they are simply removed from every post in a user's
 // account. This API endpoint has no meaningful response, so an error is returned
 // only if the HTTP request fails.
-func (p *Pinboard) DeleteTag(tag string) error {
+func (p *Pinboard) TagsDelete(tag string) error {
 	u, err := url.Parse(apiBase + "tags/delete")
 	if err != nil {
-		return fmt.Errorf("Failed to parse DeleteTag API URL: %v", err)
+		return fmt.Errorf("Failed to parse TagsDelete API URL: %v", err)
 	}
 	q := u.Query()
 
@@ -58,21 +58,21 @@ func (p *Pinboard) DeleteTag(tag string) error {
 
 	_, err = p.get(u)
 	if err != nil {
-		return fmt.Errorf("Error from DeleteTag request %v", err)
+		return fmt.Errorf("Error from TagsDelete request %v", err)
 	}
 
 	return nil
 }
 
-func (p *Pinboard) RenameTag(old, new string) error {
+func (p *Pinboard) TagsRename(old, new string) error {
 	u, err := url.Parse(apiBase + "tags/rename")
 	if err != nil {
-		return fmt.Errorf("Failed to parse RenameTag API URL: %v", err)
+		return fmt.Errorf("Failed to parse TagsRename API URL: %v", err)
 	}
 	q := u.Query()
 
 	if len(old) < 1 || len(new) < 1 {
-		return fmt.Errorf("Both old and new tag must not be empty string for RenameTag")
+		return fmt.Errorf("Both old and new tag must not be empty string for TagsRename")
 	}
 
 	q.Set("old", old)
@@ -82,7 +82,7 @@ func (p *Pinboard) RenameTag(old, new string) error {
 
 	_, err = p.get(u)
 	if err != nil {
-		return fmt.Errorf("Error from RenameTag request %v", err)
+		return fmt.Errorf("Error from TagsRename request %v", err)
 	}
 
 	return nil
@@ -94,7 +94,7 @@ type TagSuggestions struct {
 	Recommended []string `xml:"recommended"`
 }
 
-func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
+func (p *Pinboard) TagsSuggestions(postUrl string) (TagSuggestions, error) {
 	u, _ := url.Parse(apiBase + "posts/suggest")
 	q := u.Query()
 
@@ -119,7 +119,7 @@ func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
 
 	tmp, err := parseResponse(resp, &TagSuggestions{})
 	if err != nil {
-		return TagSuggestions{}, fmt.Errorf("Failed to parse TagSuggestions response %v", err)
+		return TagSuggestions{}, fmt.Errorf("Failed to parse TagsSuggestions response %v", err)
 	}
 	t := tmp.(*TagSuggestions)
 

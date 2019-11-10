@@ -16,12 +16,12 @@ func (p *Pinboard) UserSecret() (string, error) {
 		return "", fmt.Errorf("Error from UserSecret request: %v", err)
 	}
 
-	tmp, err := parseResponse(resp, &Result{})
+	tmp, err := parseResponse(resp, &result{})
 	if err != nil {
 		return "", fmt.Errorf("Failed to parse UserSecret response %v", err)
 	}
-	result := tmp.(*Result)
-	return result.Result, err
+	res := tmp.(*result)
+	return res.Result, err
 }
 
 func (p *Pinboard) UserApiToken() (string, error) {
@@ -35,10 +35,10 @@ func (p *Pinboard) UserApiToken() (string, error) {
 		return "", fmt.Errorf("Error from UserApiToken request: %v", err)
 	}
 
-	tmp, err := parseResponse(resp, &Result{})
+	tmp, err := parseResponse(resp, &result{})
 	if err != nil {
 		return "", fmt.Errorf("Failed to parse UserApiToken response %v", err)
 	}
-	result := tmp.(*Result)
-	return result.Result, err
+	res := tmp.(*result)
+	return res.Result, err
 }

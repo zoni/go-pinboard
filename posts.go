@@ -3,7 +3,6 @@ package pinboard
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"strings"
 	"time"
@@ -50,12 +49,12 @@ type PostsFilter struct {
 	Meta bool
 }
 
-type RecentPostsFilter struct {
+type PostsRecentFilter struct {
 	Tags  []string
 	Count int
 }
 
-func (p *Pinboard) LastUpdate() (time.Time, error) {
+func (p *Pinboard) PostsUpdated() (time.Time, error) {
 	u, err := url.Parse(apiBase + "posts/update")
 
 	resp, err := p.get(u)
@@ -63,30 +62,25 @@ func (p *Pinboard) LastUpdate() (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	update := &PostsLastUpdate{}
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
+	tmp, err := parseResponse(resp, &postsLastUpdate{})
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, fmt.Errorf("Error parsing PostsUpdated response: %v", err)
 	}
-	err = xml.Unmarshal(resp_body, &update)
-	if err != nil {
-		return time.Time{}, err
-	}
+	up := tmp.(*postsLastUpdate)
 
-	return update.UpdateTime, err
+	return up.UpdateTime, err
 }
 
-func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
+func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 	u, err := url.Parse(apiBase + "posts/add")
 	q := u.Query()
 
 	if len(pp.Url) < 1 {
-		return fmt.Errorf("AddPost requires a URL")
+		return fmt.Errorf("PostsAdd requires a URL")
 	}
 	pu, err := url.Parse(pp.Url)
 	if err != nil {
-		return fmt.Errorf("Error parsing AddPost URL ", err)
+		return fmt.Errorf("Error parsing PostsAdd URL ", err)
 	}
 	validScheme := false
 	for _, v := range validSchemes {
@@ -153,25 +147,25 @@ func (p *Pinboard) AddPost(pp Post, keep bool, toread bool) error {
 	return nil
 }
 
-func (p *Pinboard) DeletePost(dUrl string) error {
+func (p *Pinboard) PostsDelete(du string) error {
 	u, err := url.Parse(apiBase + "posts/delete")
 	if err != nil {
-		return fmt.Errorf("Unable to parse DeletePost url %v", err)
+		return fmt.Errorf("Unable to parse PostsDelete url %v", err)
 	}
 
 	q := u.Query()
-	q.Set("url", dUrl)
+	q.Set("url", du)
 	u.RawQuery = q.Encode()
 
 	_, err = p.get(u)
 	if err != nil {
-		return fmt.Errorf("Error from DeletePost request %v", err)
+		return fmt.Errorf("Error from PostsDelete request %v", err)
 	}
 
 	return nil
 }
 
-func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
+func (p *Pinboard) PostsGet(pf PostsFilter) ([]Post, error) {
 	u, _ := url.Parse(apiBase + "posts/get")
 	q := u.Query()
 
@@ -206,14 +200,14 @@ func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
 
 	tmp, err := parseResponse(resp, &posts{})
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing Posts response: %v", err)
+		return nil, fmt.Errorf("Error parsing PostsGet response: %v", err)
 	}
 	t := tmp.(*posts)
 
 	return t.Posts, err
 }
 
-type PostDates struct {
+type postDates struct {
 	XMLName   xml.Name   `xml:"dates"`
 	User      string     `xml:"user,attr"`
 	Tag       string     `xml:"tag,attr"`
@@ -229,7 +223,7 @@ type PostDate struct {
 // PostDates returns an array of posts-per-day optionally filtered by a
 // given tag. Contrary to Pinboard's API documentation only a single tag is
 // accepted for filtering.
-func (p *Pinboard) PostDates(tag string) ([]PostDate, error) {
+func (p *Pinboard) PostsDates(tag string) ([]PostDate, error) {
 	u, err := url.Parse(apiBase + "posts/dates")
 	q := u.Query()
 
@@ -243,30 +237,30 @@ func (p *Pinboard) PostDates(tag string) ([]PostDate, error) {
 		return nil, err
 	}
 
-	tmp, err := parseResponse(resp, &PostDates{})
+	tmp, err := parseResponse(resp, &postDates{})
 	if err != nil {
 		return []PostDate{}, err
 	}
-	pd := tmp.(*PostDates)
+	pd := tmp.(*postDates)
 
 	return pd.PostDates, err
 }
 
-func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
+func (p *Pinboard) PostsRecent(rpf PostsRecentFilter) ([]Post, error) {
 	u, err := url.Parse(apiBase + "posts/recent")
 
 	// Filters
 	q := u.Query()
 	if rpf.Count != 0 {
 		if rpf.Count < 0 || rpf.Count > 100 {
-			return nil, fmt.Errorf("RecentPostsFilter count must be between 0 and 100")
+			return nil, fmt.Errorf("PostsRecentFilter count must be between 0 and 100")
 		}
 		q.Set("count", fmt.Sprintf("%d", rpf.Count))
 	}
 
 	if len(rpf.Tags) > 0 {
 		if len(rpf.Tags) > 3 {
-			return nil, fmt.Errorf("RecentPostsFilter cannot accept more than 3 tags")
+			return nil, fmt.Errorf("PostsRecentFilter cannot accept more than 3 tags")
 		}
 		for _, t := range rpf.Tags {
 			q.Add("tag", t)
@@ -289,7 +283,7 @@ func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	return pd.Posts, err
 }
 
-type AllPostsFilter struct {
+type PostsAllFilter struct {
 	Tags    []string
 	Start   int
 	Results int
@@ -298,14 +292,14 @@ type AllPostsFilter struct {
 	Meta    bool
 }
 
-func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
+func (p *Pinboard) PostsAll(apf PostsAllFilter) ([]Post, error) {
 	u, _ := url.Parse(apiBase + "posts/all")
 	q := u.Query()
 
 	// Filters
 	if len(apf.Tags) > 0 {
 		if len(apf.Tags) > 3 {
-			return nil, fmt.Errorf("AllPosts can not accept more than 3 tags")
+			return nil, fmt.Errorf("PostsAll can not accept more than 3 tags")
 		}
 		for _, t := range apf.Tags {
 			q.Add("tag", t)
@@ -335,7 +329,7 @@ func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
 	u.RawQuery = q.Encode()
 	resp, err := p.get(u)
 	if err != nil {
-		return nil, fmt.Errorf("AllPosts failed to retrieve: %v", err)
+		return nil, fmt.Errorf("PostsAll failed to retrieve: %v", err)
 	}
 
 	tmp, err := parseResponse(resp, &Post{})
