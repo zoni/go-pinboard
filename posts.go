@@ -19,7 +19,7 @@ var validSchemes = []string{
 	"feed",
 }
 
-type Posts struct {
+type posts struct {
 	XMLName xml.Name  `xml:"posts"`
 	User    string    `xml:"user,attr"`
 	Date    time.Time `xml:"dt,attr"`
@@ -31,14 +31,14 @@ type Post struct {
 	Url         string    `xml:"href,attr"`
 	Description string    `xml:"description,attr"`
 	Hash        string    `xml:"hash,attr"`
-	Tags        PostTags  `xml:"tag,attr"`
+	Tags        postTags  `xml:"tag,attr"`
 	Extended    string    `xml:"extended,attr"`
 	Date        time.Time `xml:"time,attr"`
 	Shared      string    `xml:"shared,attr"`
 	Meta        string    `xml:"meta,attr"`
 }
 
-type PostsLastUpdate struct {
+type postsLastUpdate struct {
 	XMLName    xml.Name  `xml:"update"`
 	UpdateTime time.Time `xml:"time,attr"`
 }
@@ -204,11 +204,11 @@ func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	tmp, err := parseResponse(resp, &Posts{})
+	tmp, err := parseResponse(resp, &posts{})
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing Posts response: %v", err)
 	}
-	t := tmp.(*Posts)
+	t := tmp.(*posts)
 
 	return t.Posts, err
 }
@@ -222,7 +222,7 @@ type PostDates struct {
 
 type PostDate struct {
 	XMLName xml.Name `xml:"date"`
-	Date    UTCDate  `xml:"date,attr"`
+	Date    utcDate  `xml:"date,attr"`
 	Count   int      `xml:"count,attr"`
 }
 
@@ -284,7 +284,7 @@ func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 	if err != nil {
 		return []Post{}, err
 	}
-	pd := tmp.(*Posts)
+	pd := tmp.(*posts)
 
 	return pd.Posts, err
 }
@@ -342,7 +342,7 @@ func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
 	if err != nil {
 		return []Post{}, err
 	}
-	pd := tmp.(*Posts)
+	pd := tmp.(*posts)
 
 	return pd.Posts, err
 }

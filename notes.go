@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-type Notes struct {
+type notes struct {
 	XMLName xml.Name `xml:"notes"`
 	Notes   []Note   `xml:"note"`
 }
@@ -17,8 +17,8 @@ type Note struct {
 	ID      string    `xml:"id,attr"`
 	Title   string    `xml:"title"`
 	Hash    string    `xml:"hash"`
-	Created NotesDate `xml:"created_at"`
-	Updated NotesDate `xml:"updated_at"`
+	Created notesDate `xml:"created_at"`
+	Updated notesDate `xml:"updated_at"`
 	Length  int       `xml:"length"`
 	Text    string    `xml:"text"`
 }
@@ -34,12 +34,12 @@ func (p *Pinboard) Notes() ([]Note, error) {
 		return []Note{}, err
 	}
 
-	tmp, err := parseResponse(resp, &Notes{})
+	tmp, err := parseResponse(resp, &notes{})
 	if err != nil {
 		return []Note{}, fmt.Errorf("Failed to parse Notes response: %v", err)
 	}
-	notes := tmp.(*Notes)
-	return notes.Notes, err
+	no := tmp.(*notes)
+	return no.Notes, err
 }
 
 func (p *Pinboard) Note(noteID string) (Note, error) {
