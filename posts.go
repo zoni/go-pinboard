@@ -125,9 +125,7 @@ func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 		if len(pp.Tags) > 100 {
 			return fmt.Errorf("Pinboard posts may only have up to 100 tags")
 		}
-		for _, v := range pp.Tags {
-			q.Add("tag", v)
-		}
+		q.Set("tags", strings.Join(pp.Tags, " "))
 	}
 
 	if !pp.Date.IsZero() {
@@ -294,9 +292,9 @@ func (p *Pinboard) PostsRecent(rpf PostsRecentFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	tmp, err := parseResponse(resp, &Post{})
+	tmp, err := parseResponse(resp, &posts{})
 	if err != nil {
-		return []Post{}, err
+		return []Post{}, fmt.Errorf("Error parsing PostsRecent response: %v", err)
 	}
 	pd := tmp.(*posts)
 
