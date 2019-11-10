@@ -103,7 +103,7 @@ func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 		}
 	}
 	if !validScheme {
-		return fmt.Errorf("Invalid scheme for Pinboard URL. Scheme must be one of %v", validSchemes)
+		return fmt.Errorf("Invalid scheme %v for URL in Pinboard Post. Scheme must be one of %v", pu.Scheme, validSchemes)
 	}
 
 	q.Set("url", pp.Url)
