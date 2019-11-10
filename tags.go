@@ -3,8 +3,6 @@ package pinboard
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
 )
@@ -20,20 +18,6 @@ type Tag struct {
 	Tag     string   `xml:"tag,attr"`
 }
 
-func parseTagsResponse(resp *http.Response) (Tags, error) {
-	t := Tags{}
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return t, err
-	}
-	err = xml.Unmarshal(resp_body, &t)
-	if err != nil {
-		return t, err
-	}
-	return t, nil
-}
-
 func (p *Pinboard) Tags() (Tags, error) {
 	u, err := url.Parse(apiBase + "tags/get")
 	if err != nil {
@@ -45,7 +29,13 @@ func (p *Pinboard) Tags() (Tags, error) {
 		return Tags{}, err
 	}
 
-	return parseTagsResponse(resp)
+	tmp, err := parseResponse(resp, &Tags{})
+	if err != nil {
+		return Tags{}, fmt.Errorf("Failed to parse Tags response %v", err)
+	}
+	t := tmp.(*Tags)
+
+	return *t, err
 }
 
 // DeleteTag deletes the given tag from a user's Pinboard account. There is no
@@ -104,20 +94,6 @@ type TagSuggestions struct {
 	Recommended []string `xml:"recommended"`
 }
 
-func parseSuggestedTagsResponse(resp *http.Response) (TagSuggestions, error) {
-	ts := TagSuggestions{}
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	defer resp.Body.Close()
-	if err != nil {
-		return ts, err
-	}
-	err = xml.Unmarshal(resp_body, &ts)
-	if err != nil {
-		return ts, err
-	}
-	return ts, nil
-}
-
 func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
 	u, _ := url.Parse(apiBase + "posts/suggest")
 	q := u.Query()
@@ -141,5 +117,11 @@ func (p *Pinboard) TagSuggestions(postUrl string) (TagSuggestions, error) {
 		return TagSuggestions{}, err
 	}
 
-	return parseSuggestedTagsResponse(resp)
+	tmp, err := parseResponse(resp, &TagSuggestions{})
+	if err != nil {
+		return TagSuggestions{}, fmt.Errorf("Failed to parse TagSuggestions response %v", err)
+	}
+	t := tmp.(*TagSuggestions)
+
+	return *t, err
 }

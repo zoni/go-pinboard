@@ -4,7 +4,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -54,34 +53,6 @@ type PostsFilter struct {
 type RecentPostsFilter struct {
 	Tags  []string
 	Count int
-}
-
-func parsePostsResponse(resp *http.Response) ([]Post, error) {
-	posts := &Posts{}
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	err = xml.Unmarshal(resp_body, &posts)
-	if err != nil {
-		return nil, err
-	}
-	return posts.Posts, nil
-}
-
-func parsePostDatesResponse(resp *http.Response) ([]PostDate, error) {
-	postdates := &PostDates{}
-	resp_body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
-	if err != nil {
-		return nil, err
-	}
-	err = xml.Unmarshal(resp_body, &postdates)
-	if err != nil {
-		return nil, err
-	}
-	return postdates.PostDates, nil
 }
 
 func (p *Pinboard) LastUpdate() (time.Time, error) {
@@ -233,7 +204,13 @@ func (p *Pinboard) Posts(pf PostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	return parsePostsResponse(resp)
+	tmp, err := parseResponse(resp, &Posts{})
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing Posts response: %v", err)
+	}
+	t := tmp.(*Posts)
+
+	return t.Posts, err
 }
 
 type PostDates struct {
@@ -266,7 +243,13 @@ func (p *Pinboard) PostDates(tag string) ([]PostDate, error) {
 		return nil, err
 	}
 
-	return parsePostDatesResponse(resp)
+	tmp, err := parseResponse(resp, &PostDates{})
+	if err != nil {
+		return []PostDate{}, err
+	}
+	pd := tmp.(*PostDates)
+
+	return pd.PostDates, err
 }
 
 func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
@@ -297,7 +280,13 @@ func (p *Pinboard) RecentPosts(rpf RecentPostsFilter) ([]Post, error) {
 		return nil, err
 	}
 
-	return parsePostsResponse(resp)
+	tmp, err := parseResponse(resp, &Post{})
+	if err != nil {
+		return []Post{}, err
+	}
+	pd := tmp.(*Posts)
+
+	return pd.Posts, err
 }
 
 type AllPostsFilter struct {
@@ -349,5 +338,11 @@ func (p *Pinboard) AllPosts(apf AllPostsFilter) ([]Post, error) {
 		return nil, fmt.Errorf("AllPosts failed to retrieve: %v", err)
 	}
 
-	return parsePostsResponse(resp)
+	tmp, err := parseResponse(resp, &Post{})
+	if err != nil {
+		return []Post{}, err
+	}
+	pd := tmp.(*Posts)
+
+	return pd.Posts, err
 }

@@ -48,3 +48,16 @@ func (p *Pinboard) Get(u *url.URL) (*http.Response, error) {
 	}
 	return resp, err
 }
+
+func parseResponse(resp *http.Response, to interface{}) (interface{}, error) {
+	resp_body, err := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+	err = xml.Unmarshal(resp_body, to)
+	if err != nil {
+		return nil, err
+	}
+	return to, nil
+}
