@@ -2,6 +2,7 @@ package pinboard
 
 import (
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -94,7 +95,7 @@ func (p *Pinboard) PostsAdd(pp Post, keep bool, toread bool) error {
 	}
 	pu, err := url.Parse(pp.Url)
 	if err != nil {
-		return fmt.Errorf("Error parsing PostsAdd URL ", err)
+		return fmt.Errorf("Error parsing PostsAdd URL %v", err)
 	}
 	validScheme := false
 	for _, v := range validSchemes {
@@ -324,7 +325,7 @@ func (p *Pinboard) PostsAll(apf PostsAllFilter) ([]Post, error) {
 	// Filters
 	if len(apf.Tags) > 0 {
 		if len(apf.Tags) > 3 {
-			return nil, fmt.Errorf("PostsAll can not accept more than 3 tags")
+			return nil, errors.New("PostsAll can not accept more than 3 tags")
 		}
 		for _, t := range apf.Tags {
 			q.Add("tag", t)
