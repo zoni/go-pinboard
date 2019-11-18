@@ -8,7 +8,7 @@ import (
 )
 
 type tags struct {
-	XMLName xml.Name `xml:"tags"`
+	XMLName xml.Name `xml:"tags" json:"-"`
 	Tags    []Tag    `xml:"tag"`
 }
 
@@ -17,7 +17,7 @@ type tags struct {
 // the tag with a period (.). Tags returned from the Tags endpoints contain a count of
 // how often they're used.
 type Tag struct {
-	XMLName xml.Name `xml:"tag"`
+	XMLName xml.Name `xml:"tag" json:"-"`
 	Count   int      `xml:"count,attr"`
 	Tag     string   `xml:"tag,attr"`
 }
@@ -97,7 +97,7 @@ func (p *Pinboard) TagsRename(old, new string) error {
 // Pinboard returns two types of tag suggestions, popular tags are tags from the community.
 // Recommended tags are based on the user's existing tags
 type TagSuggestions struct {
-	XMLName     xml.Name `xml:"suggested"`
+	XMLName     xml.Name `xml:"suggested" json:"-"`
 	Popular     []string `xml:"popular"`
 	Recommended []string `xml:"recommended"`
 }

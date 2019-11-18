@@ -21,7 +21,7 @@ var validSchemes = []string{
 }
 
 type posts struct {
-	XMLName xml.Name  `xml:"posts"`
+	XMLName xml.Name  `xml:"posts" json:"-"`
 	User    string    `xml:"user,attr"`
 	Date    time.Time `xml:"dt,attr"`
 	Posts   []Post    `xml:"post"`
@@ -30,7 +30,7 @@ type posts struct {
 // Posts returned by the Pinboard API. Methods will return a slice of []Post, there
 // are no single post read endpoint(s).
 type Post struct {
-	XMLName     xml.Name  `xml:"post"`
+	XMLName     xml.Name  `xml:"post" json:"-"`
 	Url         string    `xml:"href,attr"`
 	Description string    `xml:"description,attr"`
 	Hash        string    `xml:"hash,attr"`
@@ -42,7 +42,7 @@ type Post struct {
 }
 
 type postsLastUpdate struct {
-	XMLName    xml.Name  `xml:"update"`
+	XMLName    xml.Name  `xml:"update" json:"-"`
 	UpdateTime time.Time `xml:"time,attr"`
 }
 
@@ -225,7 +225,7 @@ func (p *Pinboard) PostsGet(pf PostsFilter) ([]Post, error) {
 }
 
 type postDates struct {
-	XMLName   xml.Name   `xml:"dates"`
+	XMLName   xml.Name   `xml:"dates" json:"-"`
 	User      string     `xml:"user,attr"`
 	Tag       string     `xml:"tag,attr"`
 	PostDates []PostDate `xml:"date"`
@@ -233,7 +233,7 @@ type postDates struct {
 
 // A PostDate represents the number of posts per date within a user's account.
 type PostDate struct {
-	XMLName xml.Name `xml:"date"`
+	XMLName xml.Name `xml:"date" json:"-"`
 	Date    utcDate  `xml:"date,attr"`
 	Count   int      `xml:"count,attr"`
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type notes struct {
-	XMLName xml.Name `xml:"notes"`
+	XMLName xml.Name `xml:"notes" json:"-"`
 	Notes   []Note   `xml:"note"`
 }
 
@@ -17,7 +17,7 @@ type notes struct {
 // and Updated are only returned in the NotesList. Text is only returned by NotesGet).
 // Text may be contain newlines.
 type Note struct {
-	XMLName xml.Name  `xml:"note"`
+	XMLName xml.Name  `xml:"note" json:"-"`
 	ID      string    `xml:"id,attr"`
 	Title   string    `xml:"title"`
 	Hash    string    `xml:"hash"`
