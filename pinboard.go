@@ -23,6 +23,9 @@ type Pinboard struct {
 }
 
 func (p *Pinboard) authQuery(u *url.URL) error {
+	if p == nil {
+		return fmt.Errorf("Pinboard object has not been initialized")
+	}
 	if len(p.User) < 1 {
 		return fmt.Errorf("Pinboard requires a Username and either a Password or Token for authentication")
 	}
@@ -54,12 +57,15 @@ func (p *Pinboard) get(u *url.URL) (*http.Response, error) {
 	}
 
 	if resp.StatusCode >= 400 {
+		if resp.StatusCode == 401 {
+			return nil, fmt.Errorf("Error from Pinboard API: Authentication Failed")
+		}
 		resp_body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("Error reading error body: %v", err)
 		}
 		resp.Body.Close()
-		return nil, fmt.Errorf("Error from Pinboard API: %v", string(resp_body))
+		return nil, fmt.Errorf("Error from Pinboard API (%d): %v", resp.StatusCode, string(resp_body))
 	}
 
 	return resp, err
