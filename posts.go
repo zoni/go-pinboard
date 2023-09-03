@@ -358,7 +358,7 @@ func (p *Pinboard) PostsAll(apf PostsAllFilter) ([]Post, error) {
 		return nil, fmt.Errorf("PostsAll failed to retrieve: %v", err)
 	}
 
-	tmp, err := parseResponse(resp, &Post{})
+	tmp, err := parseResponse(resp, &posts{})
 	if err != nil {
 		return []Post{}, err
 	}
